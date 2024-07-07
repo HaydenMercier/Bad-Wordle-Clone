@@ -3,36 +3,62 @@ words = []
 lettersChecked = []
 lettersOut = []
 lettersIn = []
-guess = ""
-display = ""
+display = ["-"] * 5
 guesses = 0
-with open("output.txt") as file:
-    for line in file:
-        words.append(line.strip("\n"))
-    word = str(random.choice(words))
-    print(word)
-    while guess is not word:
-        guess = input("Guess: ")
-        guesses +=1
-        if guess == word:
-            print(f"That is correct.\nThe word was {word}.")
-            print(f"It took you {guesses} guesses!")
-            break
-        for i in guess:
-            if word.index(i) == guess.index(i):
-                display += i
-            elif i not in word:
-                print(f"{i} is not in {word.capitalize()}.")
-                display += "-"
-                lettersOut.append(i)
-                lettersChecked.append(i)
-            elif i in word:
-                print(f"{i} is in {word.capitalize()}.")
-                lettersIn.append(i)
-                lettersChecked.append(i)
-                display += "-"
-        print(display)
-        print(f"You have guessed: {', '.join(lettersChecked).upper()}.")
-        print(f"Incorrect guesses: {', '.join(lettersOut)}.")
-        print(f"Correct guesses: {','.join(lettersIn)}.")
-        print(f"Currently, the word is: {display}.")
+
+def get_word():
+    with open("output.txt") as file:
+        for line in file:
+            words.append(line.strip("\n"))
+        word = str(random.choice(words))
+    return word
+def validate_guess(guess):
+    guess = str(guess).lower()
+    if len(guess) != 5:
+        return "invalid"
+    else:
+        for i in range(len(guess)):
+                if not guess[i].isalpha():
+                    return "invalid"
+        return "valid"
+def check_guess(guess, word, guesses):
+    guess = str(guess)
+    word = str(word)
+    guesses = int(guesses)
+    global display
+    global lettersChecked
+    global lettersIn
+    global lettersOut
+    message = ""
+    if guess == word:
+        message = "That is correct.\nThe word was " + word +".\nIt took you " + str(guesses) + " guesses."
+    else:
+        for i in range(len(guess)):
+            if guess[i] in word:
+                if guess[i] == word[i]:
+                    display[i] = guess[i]
+                    lettersChecked.append(guess[i])
+                    lettersIn.append(guess[i])
+                    message += "You found " + guess[i] +".\n"
+                else:
+                    message += guess[i] +" is in the word...\n"
+                    lettersChecked.append(guess[i])
+                    lettersIn.append(guess[i])
+            else:
+                lettersChecked.append(guess[i])
+                lettersOut.append(guess[i])
+                message += guess[i] +" is not in the word...\n"
+        message += f"You have guessed: {', '.join(sorted(set(lettersChecked))).upper()}.\nIncorrect guesses: {', '.join(sorted(set(lettersOut))).upper()}\nCorrect guesses: {', '.join(sorted(set(lettersIn))).upper()}\nCurrently, the word is: {' '.join(display)}."
+        
+    return message, display
+word = get_word()
+while True:
+    guess = input("Guess: ")
+    if validate_guess(guess) == "invalid":
+        print("Invalid Guess, please guess a 5 letter word.")
+        continue
+    guesses += 1
+    result, display = check_guess(guess, word, guesses)
+    print(result)
+    if guess == word:
+        break

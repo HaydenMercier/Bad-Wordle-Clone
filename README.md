@@ -1,2 +1,2 @@
 # Bad Wordle Clone
- A bad wordle clone in python
+ A bad wordle clone made in python
